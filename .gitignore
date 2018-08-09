@@ -1,3 +1,4 @@
 output/
 ge2e_model/
 *.pyc
+__pycache__/*
