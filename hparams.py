@@ -60,7 +60,7 @@ def create_hparams(hparams_string=None, verbose=False):
         use_gst=True,
         linear_dim=1025,
         # Speaker Encoder
-        style='',  # ['speaker_encoder','style_embedding','both','']
+        style='both',  # ['speaker_encoder','style_embedding','both','']
         num_mel=40,
         se_sample_rate =8000,
         se_window=0.025,

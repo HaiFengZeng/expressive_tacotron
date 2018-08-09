@@ -285,7 +285,7 @@ class Decoder(nn.Module):
             hparams.attention_location_kernel_size)
 
         self.decoder_rnn = nn.LSTMCell(
-            hparams.prenet_dim + hparams.encoder_embedding_dim,
+            hparams.prenet_dim + self.encoder_embedding_dim,
             hparams.decoder_rnn_dim, 1)
 
         self.linear_projection = LinearNorm(
@@ -293,7 +293,7 @@ class Decoder(nn.Module):
             hparams.n_mel_channels * hparams.n_frames_per_step)
 
         self.gate_layer = LinearNorm(
-            hparams.decoder_rnn_dim + hparams.encoder_embedding_dim, 1,
+            hparams.decoder_rnn_dim + self.encoder_embedding_dim, 1,
             bias=True, w_init_gain='sigmoid')
 
     def get_go_frame(self, memory):
@@ -516,6 +516,7 @@ class Tacotron2(nn.Module):
         key_dim = 256 / hparams.num_heads
         self.reference_encoder = ReferenceEncoder(input_dim=hparams.linear_dim, filters=[32, 32, 64, 64, 128, 128])
         self.style_attention = MultiHeadAttention(query_dim=128, key_dim=key_dim, num_units=128)
+        self.gst_token = nn.Parameter(torch.randn(hparams.style_token, key_dim))
         self.encoder = Encoder(hparams)
         self.decoder = Decoder(hparams)
         self.postnet = Postnet(hparams)
@@ -529,7 +530,9 @@ class Tacotron2(nn.Module):
         mel_padded = to_gpu(mel_padded).float()
         gate_padded = to_gpu(gate_padded).float()
         output_lengths = to_gpu(output_lengths).long()
-
+        reference_mel = torch.from_numpy(reference_mel).float()
+        reference_mel = to_gpu(reference_mel)
+        d_vector = to_gpu(d_vector).float()
         return (
             (text_padded, input_lengths, mel_padded, max_len, output_lengths, reference_mel, d_vector),
             (mel_padded, gate_padded))
