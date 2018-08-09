@@ -270,13 +270,10 @@ class Decoder(nn.Module):
 
         attention_rnn_input_size = hparams.decoder_rnn_dim + hparams.encoder_embedding_dim
         if hparams.style == 'style_embedding':
-            attention_rnn_input_size += 128
             self.encoder_embedding_dim += 128
         elif hparams.style == 'speaker_encoder':
-            attention_rnn_input_size += 256
             self.encoder_embedding_dim += 256
         elif hparams.style == 'both':
-            attention_rnn_input_size += 128 + 256
             self.encoder_embedding_dim += 128 + 256
 
         self.attention_rnn = nn.LSTMCell(hparams.decoder_rnn_dim + self.encoder_embedding_dim,
@@ -288,15 +285,15 @@ class Decoder(nn.Module):
             hparams.attention_location_kernel_size)
 
         self.decoder_rnn = nn.LSTMCell(
-            hparams.decoder_rnn_dim,
+            hparams.prenet_dim + hparams.encoder_embedding_dim,
             hparams.decoder_rnn_dim, 1)
 
         self.linear_projection = LinearNorm(
-            attention_rnn_input_size,
+            hparams.decoder_rnn_dim + self.encoder_embedding_dim,
             hparams.n_mel_channels * hparams.n_frames_per_step)
 
         self.gate_layer = LinearNorm(
-            attention_rnn_input_size, 1,
+            hparams.decoder_rnn_dim + self.encoder_embedding_dim, 1,
             bias=True, w_init_gain='sigmoid')
 
     def get_go_frame(self, memory):
@@ -423,6 +420,7 @@ class Decoder(nn.Module):
         self.attention_weights_cum += self.attention_weights
         prenet_output = self.prenet(decoder_input)
         decoder_input = torch.cat((prenet_output, self.attention_context), -1)
+
         self.decoder_hidden, self.decoder_cell = self.decoder_rnn(
             decoder_input, (self.decoder_hidden, self.decoder_cell))
 

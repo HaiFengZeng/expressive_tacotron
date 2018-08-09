@@ -60,7 +60,7 @@ def create_hparams(hparams_string=None, verbose=False):
         use_gst=True,
         linear_dim=1025,
         # Speaker Encoder
-        style='speaker_encoder',  # ['speaker_encoder','style_embedding','both']
+        style='',  # ['speaker_encoder','style_embedding','both','']
         num_mel=40,
         se_sample_rate =8000,
         se_window=0.025,
@@ -100,7 +100,7 @@ def create_hparams(hparams_string=None, verbose=False):
         learning_rate=1e-3,
         weight_decay=1e-6,
         grad_clip_thresh=1,
-        batch_size=8,
+        batch_size=4,
         mask_padding=False  # set model's padded outputs to padded values
     )
 

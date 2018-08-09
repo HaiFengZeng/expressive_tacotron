@@ -140,8 +140,9 @@ def validate(model, criterion, valset, iteration, batch_size, n_gpus,
             x, y = batch_parser(batch)
             y_pred = model(x)
             loss = criterion(y_pred, y)
+            print(loss)
             reduced_val_loss = reduce_tensor(loss.data, n_gpus)[0] \
-                if distributed_run else loss.data[0]
+                if distributed_run else loss.item()
             val_loss += reduced_val_loss
         val_loss = val_loss / (i + 1)
 
@@ -222,8 +223,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
                 grad_norm = optimizer.clip_fp32_grads(hparams.grad_clip_thresh)
             else:
                 loss.backward()
-                grad_norm = torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), hparams.grad_clip_thresh)
+                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), hparams.grad_clip_thresh)
 
             optimizer.step()
 
